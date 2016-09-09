@@ -19,17 +19,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 
 class SpecialOAuth2Client extends SpecialPage {
 
-	private $_clientId;
-	private $_clientSecret;
-	private $_clientCallbackUrl;
-
-	private $_serviceAuthorizeEndpointUrl;
-	private $_serviceAccessTokenEndpointUrl;
-	private $_serviceApiEndpointUrl;
-
-	private $_euTable = 'external_user';
-
-	private $_oAuth2Service;
+	private $_provider;
 
 	/**
 	 * Required settings in global $wgOAuth2Client
@@ -45,35 +35,20 @@ class SpecialOAuth2Client extends SpecialPage {
 	 * $wgOAuth2Client['configuration']['api_endpoint']
 	 */
 	public function __construct() {
-		if( !self::OAuthEnabled() ) return;
 
 		parent::__construct('OAuth2Client'); // ???: wat doet dit?
 		global $wgOAuth2Client, $wgScriptPath;
 		global $wgServer, $wgArticlePath;
 
-		$client = new OAuth2\Client(
-			$wgOAuth2Client['client']['id'],
-			$wgOAuth2Client['client']['secret'],
-			$wgServer . str_replace( '$1', 'Special:OAuth2Client/callback', $wgArticlePath )
-			//SpecialPage::getTitleFor( 'OAuth2Client', 'callback' )->getFullURL() // setting variant does not work on specialpages
-		);
-
-		// configuration of service
-		$configuration = new OAuth2\Service\Configuration(
-			$wgOAuth2Client['configuration']['authorize_endpoint'],
-			$wgOAuth2Client['configuration']['access_token_endpoint'],
-			$wgOAuth2Client['configuration']['http_bearer_token'],
-			$wgOAuth2Client['configuration']['query_parameter_token']
-		);
-		//$configuration->setAuthorizationMethod( OAuth2\Service\Configuration::AUTHORIZATION_METHOD_ALTERNATIVE);
-
-		// storage class for access token, just implement OAuth2\DataStore interface for
-		// your own implementation
-		$dataStore = new OAuth2\DataStore\Session();
-
-		$scope = null;
-
-		$this->_oAuth2Service = new OAuth2\Service($client, $configuration, $dataStore, $scope);
+		$this->_provider = new \League\OAuth2\Client\Provider\GenericProvider([
+			'clientId'                => $wgOAuth2Client['client']['id'],    // The client ID assigned to you by the provider
+			'clientSecret'            => $wgOAuth2Client['client']['secret'],   // The client password assigned to you by the provider
+			'redirectUri'             => $wgOAuth2Client['configuration']['redirect_uri'],
+			'urlAuthorize'            => $wgOAuth2Client['configuration']['authorize_endpoint'],
+			'urlAccessToken'          => $wgOAuth2Client['configuration']['access_token_endpoint'],
+			'urlResourceOwnerDetails' => $wgOAuth2Client['configuration']['api_endpoint'],
+			'scopes'				=> 'read_citizen_info'
+		]);
 	}
 
 	// default method being called by a specialpage
@@ -97,26 +72,42 @@ class SpecialOAuth2Client extends SpecialPage {
 	}
 
 	private function _redirect() {
-		if( !self::OAuthEnabled() ) return false;
 
 		global $wgRequest;
 		$_SESSION['returnto'] = $wgRequest->getVal( 'returnto' );
-		$this->_oAuth2Service->authorize();
+
+		// Fetch the authorization URL from the provider; this returns the
+		// urlAuthorize option and generates and applies any necessary parameters
+		// (e.g. state).
+		$authorizationUrl = $this->_provider->getAuthorizationUrl();
+
+		// Get the state generated for you and store it to the session.
+		$_SESSION['oauth2state'] = $this->_provider->getState();
+
+		// Redirect the user to the authorization URL.
+		header('Location: ' . $authorizationUrl);
+		exit;
 	}
 
 	private function _handleCallback(){
-		if( !self::OAuthEnabled() ) return false;
+		try {
 
-		global $wgOAuth2Client, $wgOut;
-		if( $this->_oAuth2Service->getAccessToken() ) {
-			$requestApiResponse = $this->_oAuth2Service->callApiEndpoint($wgOAuth2Client['configuration']['api_endpoint']);
-		} else {
-			throw new MWException('Invalid callback');
+			// Try to get an access token using the authorization code grant.
+			$accessToken = $this->_provider->getAccessToken('authorization_code', [
+				'code' => $_GET['code']
+			]);
+		} catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+
+			// Failed to get the access token or user details.
+			exit($e->getMessage());
+
 		}
 
-		$user = $this->_userHandling( $requestApiResponse );
+		$resourceOwner = $this->_provider->getResourceOwner($accessToken);
+		$user = $this->_userHandling( $resourceOwner->toArray() );
 		$user->setCookies();
 
+		global $wgOut;
 		if( $user->getRegistration() > wfTimestamp( TS_MW ) - 1 ) {
 			// new user!
 			$wgOut->redirect(SpecialPage::getTitleFor('Preferences')->getLinkUrl());
@@ -141,7 +132,7 @@ class SpecialOAuth2Client extends SpecialPage {
 
 		$sevice_name = ( isset( $wgOAuth2Client['configuration']['sevice_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['sevice_name'] ) ? $wgOAuth2Client['configuration']['sevice_name'] : 'OAuth2' );
 
-		$wgOut->setPagetitle( wfMsg( 'oauth2client-logout-header', $sevice_name) );
+		$wgOut->setPagetitle( wfMessage( 'oauth2client-logout-header', $sevice_name)->text() );
 		$wgOut->addWikiMsg( 'oauth2client-logged-out' );
 		$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2-again', $this->getTitle( 'redirect' )->getPrefixedURL(), $sevice_name );
 	}
@@ -150,7 +141,7 @@ class SpecialOAuth2Client extends SpecialPage {
 		global $wgOAuth2Client, $wgOut, $wgUser, $wgScriptPath, $wgExtensionAssetsPath;
 		$sevice_name = ( isset( $wgOAuth2Client['configuration']['sevice_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['sevice_name'] ) ? $wgOAuth2Client['configuration']['sevice_name'] : 'OAuth2' );
 
-		$wgOut->setPagetitle( wfMsg( 'oauth2client-login-header', $sevice_name) );
+		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $sevice_name)->text() );
 		if ( !$wgUser->isLoggedIn() ) {
 			$wgOut->addWikiMsg( 'oauth2client-you-can-login-to-this-wiki-with-oauth2', $sevice_name );
 			$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2', $this->getTitle( 'redirect' )->getPrefixedURL(), $sevice_name );
@@ -164,69 +155,34 @@ class SpecialOAuth2Client extends SpecialPage {
 	protected function _userHandling( $response ) {
 		global $wgOAuth2Client, $wgAuth;
 
-		// TODO: make id, name etc. parameters configurable
-		$oAuth2Id = $response['id'];
-		$oAuth2Name = $response['first_name'] .( strlen($response['last_name']) > 0 ? ' ' . $response['last_name'] : '');
+		$username = $response['user'][$wgOAuth2Client['configuration']['username']];
+		$email = $response['user'][$wgOAuth2Client['configuration']['email']];
 
-		// not required
-		$oAuth2Email = ( isset( $response['email'] ) ? $response['email'] : '' );
-
-
-		$externalId = 'OAuth2Client.' . $wgOAuth2Client['client']['id'] . '.' . $oAuth2Id;
-
-		$dbr = wfGetDB( DB_SLAVE );
-		$row = $dbr->selectRow(
-			'external_user',
-			'*',
-			array( 'eu_external_id' => $externalId )
-		);
-		if( $row ) {
-			// existing OAuth2 user
-			return User::newFromId( $row->eu_local_id );
+		$user = User::newFromName($username, 'creatable');
+		if (!$user) {
+			throw new MWException('Could not create user with username:' . $username);
+			die();
 		}
-		// create user based on $oAuth2Name
-		$counter = 1;
-		$success = false; 
-		while( !$success && $counter <= 1000 ) {
-			$checkName = $oAuth2Name . ( $counter > 1 ? ' ' . $counter : '' );
-			$user = User::newFromName( $checkName, 'creatable' );
-			$counter ++;
-			$success = (false !== $user && $user->getId() == 0);
+		$user->setRealName($username);
+		$user->setEmail($email);
+		$user->load();
+		if ( !( $user instanceof User && $user->getId() ) ) {
+			$user->addToDatabase();
 		}
-		if( false === $user || $user->getId() != 0 ) {
-			throw new MWException('Unable to create new user account, please contact the Wiki administrator');
+		$user->setToken();
+		// Setup the session
+		global $wgSessionStarted;
+		if (!$wgSessionStarted) {
+			wfSetupSession();
 		}
-		$user->setRealName($oAuth2Name);
-		if( strlen($oAuth2Email) > 0 ) {
-			$user->setEmail($oAuth2Email);
-			$user->setEmailAuthenticationTimestamp(time()); // ???: should we auto-authenticate e-mail?
-		}
-		if ( $wgAuth->allowPasswordChange() ) {
-			$user->setPassword(User::randomPassword());
-		}
-		$user->addToDatabase();
-
-		// link local user to remote OAuth2
-		$dbw = wfGetDB( DB_MASTER );
-		$dbw->replace( 'external_user',
-			array( 'eu_local_id', 'eu_external_id' ),
-			array( 'eu_local_id' => $user->getId(),
-				   'eu_external_id' => $externalId ),
-			__METHOD__ );
-
+		$user->setCookies();
+		$this->getContext()->setUser( $user );
+		$user->saveSettings();
+		global $wgUser;
+		$wgUser = $user;
+		$sessionUser = User::newFromSession($this->getRequest());
+		$sessionUser->load();
 		return $user;
 	}
 
-	static function OAuthEnabled() {
-		global $wgOAuth2Client;
-
-		return isset(
-			$wgOAuth2Client['client']['id'],
-			$wgOAuth2Client['client']['secret'],
-			$wgOAuth2Client['configuration']['authorize_endpoint'],
-			$wgOAuth2Client['configuration']['access_token_endpoint'],
-			$wgOAuth2Client['configuration']['http_bearer_token'],
-			$wgOAuth2Client['configuration']['query_parameter_token']
-		);
-	}
 }

@@ -8,8 +8,9 @@
  * @ingroup OAuth2Client
  *
  * @author Joost de Keijzer
+ * @author Nischay Nahata for Schine
  *
- * Uses the OAuth2 library https://github.com/vznet/oauth_2.0_client_php
+ * Uses the OAuth2 library https://github.com/thephpleague/oauth2-client
  *
  */
 
@@ -17,23 +18,14 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 	die( 'This is a MediaWiki extension, and must be run from within MediaWiki.' );
 }
 
-foreach(array('Client', 'DataStore', 'Exception', 'HttpClient', 'Service', 'Token') as $class) {
-	$wgAutoloadClasses[sprintf('%s\%s', 'OAuth2', $class)] = sprintf('%s/%s/%s.php', OAuth2ClientHooks::getOAuth2VendorClassPath(), 'OAuth2', $class);
-}
-$wgAutoloadClasses[sprintf('%s\%s\%s', 'OAuth2', 'DataStore', 'Session')] = sprintf('%s/%s/%s/%s.php', OAuth2ClientHooks::getOAuth2VendorClassPath(), 'OAuth2', 'DataStore', 'Session');
-$wgAutoloadClasses[sprintf('%s\%s\%s', 'OAuth2', 'Service', 'Configuration')] = sprintf('%s/%s/%s/%s.php', OAuth2ClientHooks::getOAuth2VendorClassPath(), 'OAuth2', 'Service', 'Configuration');
+require __DIR__ . '/vendors/oauth2-client/vendor/autoload.php';
 
-spl_autoload_register(function ($class) {
-	if( substr( $class, 0, 7 ) == 'OAuth2\\' ) {
-		include OAuth2ClientHooks::getOAuth2VendorClassPath() . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
-	}
-});
 
 $wgExtensionCredits['specialpage'][] = array(
 	'path' => __FILE__,
 	'name' => 'OAuth2 Client',
 	'version' => '0.2',
-	'author' => array( 'Joost de Keijzer', '[http://dekeijzer.org]' ), 
+	'author' => array( 'Joost de Keijzer', '[http://dekeijzer.org]', 'Nischay Nahata', 'Schine' ), 
 	'url' => 'http://dekeijzer.org',
 	'descriptionmsg' => 'oauth2client-act-as-a-client-to-any-oauth2-server'
 );
@@ -54,7 +46,6 @@ $wgHooks['UserLogout'][] = 'OAuth2ClientHooks::onUserLogout';
 
 class OAuth2ClientHooks {
 	public static function onPersonalUrls( array &$personal_urls, Title $title ) {
-		if( !SpecialOAuth2Client::OAuthEnabled() ) return true;
 
 		global $wgOAuth2Client, $wgUser, $wgRequest;
 		if( $wgUser->isLoggedIn() ) return true;
@@ -71,7 +62,7 @@ class OAuth2ClientHooks {
 		if( isset( $wgOAuth2Client['configuration']['sevice_login_link_text'] ) && 0 < strlen( $wgOAuth2Client['configuration']['sevice_login_link_text'] ) ) {
 			$sevice_login_link_text = $wgOAuth2Client['configuration']['sevice_login_link_text'];
 		} else {
-			$sevice_login_link_text = wfMsg('oauth2client-header-link-text', $sevice_name);
+			$sevice_login_link_text = wfMessage('oauth2client-header-link-text', $sevice_name)->text();
 		}
 
 		$inExt = ( null == $page || ('OAuth2Client' == substr( $page->mUrlform, 0, 12) ) );
@@ -102,23 +93,12 @@ class OAuth2ClientHooks {
 		}
 		return true;
 	}
+
 	public static function onUserLogout( &$user ) {
-		if( !SpecialOAuth2Client::OAuthEnabled() ) return true;
 
 		global $wgOut;
-		$dbr = wfGetDB( DB_SLAVE );
-		$row = $dbr->selectRow(
-			'external_user',
-			'*',
-			array( 'eu_local_id' => $user->getId() )
-		);
-		if( $row ) {
-			$wgOut->redirect( SpecialPage::getTitleFor( 'OAuth2Client', 'logout' )->getFullURL() );
-		}
-		return true;
-	}
+		$wgOut->redirect( SpecialPage::getTitleFor( 'OAuth2Client', 'logout' )->getFullURL() );
 
-	public static function getOAuth2VendorClassPath() {
-		return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'vendors' . DIRECTORY_SEPARATOR . 'oauth_2';
+		return true;
 	}
 }

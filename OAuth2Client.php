@@ -25,7 +25,7 @@ $wgExtensionCredits['specialpage'][] = array(
 	'path' => __FILE__,
 	'name' => 'OAuth2 Client',
 	'version' => '0.2',
-	'author' => array( 'Joost de Keijzer', '[http://dekeijzer.org]', 'Nischay Nahata', 'Schine' ),
+	'author' => array( 'Joost de Keijzer', '[http://dekeijzer.org]', 'Nischay Nahata', 'Schine' ), 
 	'url' => 'http://dekeijzer.org',
 	'descriptionmsg' => 'oauth2client-act-as-a-client-to-any-oauth2-server'
 );
@@ -42,7 +42,6 @@ $wgSpecialPages['OAuth2Client'] = 'SpecialOAuth2Client';
 $wgSpecialPageGroups['OAuth2Client'] = 'login';
 
 $wgHooks['PersonalUrls'][] = 'OAuth2ClientHooks::onPersonalUrls';
-$wgHooks['UserLogout'][] = 'OAuth2ClientHooks::onUserLogout';
 
 class OAuth2ClientHooks {
 	public static function onPersonalUrls( array &$personal_urls, Title $title ) {
@@ -51,32 +50,32 @@ class OAuth2ClientHooks {
 		if( $wgUser->isLoggedIn() ) return true;
 
 
-		# Due to bug 32276, if a user does not have read permissions,
-		# $this->getTitle() will just give Special:Badtitle, which is
-		# not especially useful as a returnto parameter. Use the title
+		# Due to bug 32276, if a user does not have read permissions, 
+		# $this->getTitle() will just give Special:Badtitle, which is 
+		# not especially useful as a returnto parameter. Use the title 
 		# from the request instead, if there was one.
 		# see SkinTemplate->buildPersonalUrls()
 		$page = Title::newFromURL( $wgRequest->getVal( 'title', '' ) );
 
-		$service_name = isset( $wgOAuth2Client['configuration']['service_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_name'] ) ? $wgOAuth2Client['configuration']['service_name'] : 'OAuth2';
-		if( isset( $wgOAuth2Client['configuration']['service_login_link_text'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_login_link_text'] ) ) {
-			$service_login_link_text = $wgOAuth2Client['configuration']['service_login_link_text'];
+		$sevice_name = isset( $wgOAuth2Client['configuration']['sevice_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['sevice_name'] ) ? $wgOAuth2Client['configuration']['sevice_name'] : 'OAuth2';
+		if( isset( $wgOAuth2Client['configuration']['sevice_login_link_text'] ) && 0 < strlen( $wgOAuth2Client['configuration']['sevice_login_link_text'] ) ) {
+			$sevice_login_link_text = $wgOAuth2Client['configuration']['sevice_login_link_text'];
 		} else {
-			$service_login_link_text = wfMessage('oauth2client-header-link-text', $service_name)->text();
+			$sevice_login_link_text = wfMessage('oauth2client-header-link-text', $sevice_name)->text();
 		}
 
-		$inExt = ( null == $page || ('OAuth2Client' == substr( $page->mUrlform, 0, 12) ) );
+		$inExt = ( null == $page || ('OAuth2Client' == substr( $page->getText(), 0, 12) ) || strstr($page->getText(), 'Logout') );
 		$personal_urls['anon_oauth_login'] = array(
-			'text' => $service_login_link_text,
+			'text' => $sevice_login_link_text,
 			//'class' => ,
 			'active' => false,
 		);
 		if( $inExt ) {
 			$personal_urls['anon_oauth_login']['href'] = Skin::makeSpecialUrlSubpage( 'OAuth2Client', 'redirect' );
 		} else {
-			# Due to bug 32276, if a user does not have read permissions,
-			# $this->getTitle() will just give Special:Badtitle, which is
-			# not especially useful as a returnto parameter. Use the title
+			# Due to bug 32276, if a user does not have read permissions, 
+			# $this->getTitle() will just give Special:Badtitle, which is 
+			# not especially useful as a returnto parameter. Use the title 
 			# from the request instead, if there was one.
 			# see SkinTemplate->buildPersonalUrls()
 			$personal_urls['anon_oauth_login']['href'] = Skin::makeSpecialUrlSubpage(
@@ -94,11 +93,4 @@ class OAuth2ClientHooks {
 		return true;
 	}
 
-	public static function onUserLogout( &$user ) {
-
-		global $wgOut;
-		$wgOut->redirect( SpecialPage::getTitleFor( 'OAuth2Client', 'logout' )->getFullURL() );
-
-		return true;
-	}
 }

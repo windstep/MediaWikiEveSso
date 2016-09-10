@@ -47,7 +47,7 @@ class SpecialOAuth2Client extends SpecialPage {
 			'urlAuthorize'            => $wgOAuth2Client['configuration']['authorize_endpoint'],
 			'urlAccessToken'          => $wgOAuth2Client['configuration']['access_token_endpoint'],
 			'urlResourceOwnerDetails' => $wgOAuth2Client['configuration']['api_endpoint'],
-			'scopes'                  => $wgOAuth2Client['configuration']['scopes']
+			'scopes'				=> 'read_citizen_info'
 		]);
 	}
 
@@ -61,20 +61,18 @@ class SpecialOAuth2Client extends SpecialPage {
 			case 'callback':
 				$this->_handleCallback();
 			break;
-			case 'logout':
-				$this->_logout();
-			break;
 			default:
 				$this->_default();
 			break;
 		}
-
+		
 	}
 
 	private function _redirect() {
 
-		global $wgRequest;
-		$_SESSION['returnto'] = $wgRequest->getVal( 'returnto' );
+		global $wgRequest, $wgOut;
+		$wgRequest->getSession()->persist();
+		$wgRequest->getSession()->set('returnto', $wgRequest->getVal( 'returnto' ));
 
 		// Fetch the authorization URL from the provider; this returns the
 		// urlAuthorize option and generates and applies any necessary parameters
@@ -82,11 +80,11 @@ class SpecialOAuth2Client extends SpecialPage {
 		$authorizationUrl = $this->_provider->getAuthorizationUrl();
 
 		// Get the state generated for you and store it to the session.
-		$_SESSION['oauth2state'] = $this->_provider->getState();
+		$wgRequest->getSession()->set('oauth2state', $this->_provider->getState());
+		$wgRequest->getSession()->save();
 
 		// Redirect the user to the authorization URL.
-		header('Location: ' . $authorizationUrl);
-		exit;
+		$wgOut->redirect( $authorizationUrl );
 	}
 
 	private function _handleCallback(){
@@ -107,44 +105,37 @@ class SpecialOAuth2Client extends SpecialPage {
 		$user = $this->_userHandling( $resourceOwner->toArray() );
 		$user->setCookies();
 
-		global $wgOut;
+		global $wgOut, $wgRequest;
 		if( $user->getRegistration() > wfTimestamp( TS_MW ) - 1 ) {
 			// new user!
 			$wgOut->redirect(SpecialPage::getTitleFor('Preferences')->getLinkUrl());
 		} else {
 			$title = null;
-			if( isset( $_SESSION['returnto'] ) ) {
-				$title = Title::newFromText( $_SESSION['returnto'] );
-				unset( $_SESSION['returnto'] );
+			$wgRequest->getSession()->persist();
+			if( $wgRequest->getSession()->exists('returnto') ) {
+				$title = Title::newFromText( $wgRequest->getSession()->get('returnto') );
+				$wgRequest->getSession()->remove('returnto');
+				$wgRequest->getSession()->save();
 			}
 
 			if( !$title instanceof Title || 0 > $title->mArticleID ) {
 				$title = Title::newMainPage();
 			}
+			// var_dump($wgRequest->getSession()->exists('returnto'), $wgRequest->getSession()->get('returnto'), $title);
+			// die();
 			$wgOut->redirect( $title->getFullURL() );
 		}
 		return true;
 	}
 
-	private function _logout() {
-		global $wgOAuth2Client, $wgOut, $wgUser;
-		if( $wgUser->isLoggedIn() ) $wgUser->logout();
-
-		$service_name = ( isset( $wgOAuth2Client['configuration']['service_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_name'] ) ? $wgOAuth2Client['configuration']['service_name'] : 'OAuth2' );
-
-		$wgOut->setPagetitle( wfMessage( 'oauth2client-logout-header', $service_name)->text() );
-		$wgOut->addWikiMsg( 'oauth2client-logged-out' );
-		$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2-again', $this->getTitle( 'redirect' )->getPrefixedURL(), $service_name );
-	}
-
 	private function _default(){
 		global $wgOAuth2Client, $wgOut, $wgUser, $wgScriptPath, $wgExtensionAssetsPath;
-		$service_name = ( isset( $wgOAuth2Client['configuration']['service_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_name'] ) ? $wgOAuth2Client['configuration']['service_name'] : 'OAuth2' );
+		$sevice_name = ( isset( $wgOAuth2Client['configuration']['sevice_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['sevice_name'] ) ? $wgOAuth2Client['configuration']['sevice_name'] : 'OAuth2' );
 
-		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $service_name)->text() );
+		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $sevice_name)->text() );
 		if ( !$wgUser->isLoggedIn() ) {
-			$wgOut->addWikiMsg( 'oauth2client-you-can-login-to-this-wiki-with-oauth2', $service_name );
-			$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2', $this->getTitle( 'redirect' )->getPrefixedURL(), $service_name );
+			$wgOut->addWikiMsg( 'oauth2client-you-can-login-to-this-wiki-with-oauth2', $sevice_name );
+			$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2', $this->getTitle( 'redirect' )->getPrefixedURL(), $sevice_name );
 
 		} else {
 			$wgOut->addWikiMsg( 'oauth2client-youre-already-loggedin' );
@@ -153,7 +144,7 @@ class SpecialOAuth2Client extends SpecialPage {
 	}
 
 	protected function _userHandling( $response ) {
-		global $wgOAuth2Client, $wgAuth;
+		global $wgOAuth2Client, $wgAuth, $wgRequest;
 
 		$username = $response['user'][$wgOAuth2Client['configuration']['username']];
 		$email = $response['user'][$wgOAuth2Client['configuration']['email']];
@@ -167,14 +158,16 @@ class SpecialOAuth2Client extends SpecialPage {
 		$user->setEmail($email);
 		$user->load();
 		if ( !( $user instanceof User && $user->getId() ) ) {
-			$user->addToDatabase();
+			// $user->addToDatabase();
+			$authManager = MediaWiki\Auth\AuthManager::singleton();
+			$authManager->autoCreateUser( $user, MediaWiki\Auth\AuthManager::AUTOCREATE_SOURCE_SESSION );
+			$user->confirmEmail();
+			$user->saveSettings();
 		}
 		$user->setToken();
+
 		// Setup the session
-		global $wgSessionStarted;
-		if (!$wgSessionStarted) {
-			wfSetupSession();
-		}
+		$wgRequest->getSession()->persist();
 		$user->setCookies();
 		$this->getContext()->setUser( $user );
 		$user->saveSettings();

@@ -107,25 +107,18 @@ class SpecialOAuth2Client extends SpecialPage {
 		$user->setCookies();
 
 		global $wgOut, $wgRequest;
-		if( $user->getRegistration() > wfTimestamp( TS_MW ) - 1 ) {
-			// new user!
-			$wgOut->redirect(SpecialPage::getTitleFor('Preferences')->getLinkUrl());
-		} else {
-			$title = null;
-			$wgRequest->getSession()->persist();
-			if( $wgRequest->getSession()->exists('returnto') ) {
-				$title = Title::newFromText( $wgRequest->getSession()->get('returnto') );
-				$wgRequest->getSession()->remove('returnto');
-				$wgRequest->getSession()->save();
-			}
-
-			if( !$title instanceof Title || 0 > $title->mArticleID ) {
-				$title = Title::newMainPage();
-			}
-			// var_dump($wgRequest->getSession()->exists('returnto'), $wgRequest->getSession()->get('returnto'), $title);
-			// die();
-			$wgOut->redirect( $title->getFullURL() );
+		$title = null;
+		$wgRequest->getSession()->persist();
+		if( $wgRequest->getSession()->exists('returnto') ) {
+			$title = Title::newFromText( $wgRequest->getSession()->get('returnto') );
+			$wgRequest->getSession()->remove('returnto');
+			$wgRequest->getSession()->save();
 		}
+
+		if( !$title instanceof Title || 0 > $title->mArticleID ) {
+			$title = Title::newMainPage();
+		}
+		$wgOut->redirect( $title->getFullURL() );
 		return true;
 	}
 
@@ -159,11 +152,11 @@ class SpecialOAuth2Client extends SpecialPage {
 		$user->setEmail($email);
 		$user->load();
 		if ( !( $user instanceof User && $user->getId() ) ) {
-			// $user->addToDatabase();
-			$authManager = MediaWiki\Auth\AuthManager::singleton();
-			$authManager->autoCreateUser( $user, MediaWiki\Auth\AuthManager::AUTOCREATE_SOURCE_SESSION );
+			$user->addToDatabase();
+			// MediaWiki recommends below code instead of addToDatabase to create user but it seems to fail.
+			// $authManager = MediaWiki\Auth\AuthManager::singleton();
+			// $authManager->autoCreateUser( $user, MediaWiki\Auth\AuthManager::AUTOCREATE_SOURCE_SESSION );
 			$user->confirmEmail();
-			$user->saveSettings();
 		}
 		$user->setToken();
 

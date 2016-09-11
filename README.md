@@ -30,6 +30,9 @@ $wgOAuth2Client['configuration']['authorize_endpoint']     = ''; // Authorizatio
 $wgOAuth2Client['configuration']['access_token_endpoint']  = ''; // Token URL
 $wgOAuth2Client['configuration']['api_endpoint']           = ''; // URL to fetch user JSON
 $wgOAuth2Client['configuration']['redirect_uri']           = ''; // URL for OAuth2 server to redirect to
+
+$wgOAuth2Client['configuration']['username'] = 'username'; // JSON path to username
+$wgOAuth2Client['configuration']['email'] = 'email'; // JSON path to email
 ```
 
 The **Redirect URI** for your wiki should be:
@@ -44,9 +47,6 @@ Optional further configuration
 $wgOAuth2Client['configuration']['http_bearer_token'] = 'Bearer'; // Token to use in HTTP Authentication
 $wgOAuth2Client['configuration']['query_parameter_token'] = 'auth_token'; // query parameter to use
 $wgOAuth2Client['configuration']['scopes'] = 'read_citizen_info'; //Permissions
-
-$wgOAuth2Client['configuration']['username'] = 'username'; // JSON path to username
-$wgOAuth2Client['configuration']['email'] = 'email'; // JSON path to email
 
 $wgOAuth2Client['configuration']['service_name'] = 'Citizen Registry'; // the name of your service
 $wgOAuth2Client['configuration']['service_login_link_text'] = 'Login with StarMade'; // the text of the login link

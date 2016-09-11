@@ -8,6 +8,7 @@
  * @ingroup OAuth2Client
  *
  * @author Joost de Keijzer
+ * @author Nischay Nahata for Schine GmbH
  *
  * Uses the OAuth2 library https://github.com/vznet/oauth_2.0_client_php
  *
@@ -47,7 +48,7 @@ class SpecialOAuth2Client extends SpecialPage {
 			'urlAuthorize'            => $wgOAuth2Client['configuration']['authorize_endpoint'],
 			'urlAccessToken'          => $wgOAuth2Client['configuration']['access_token_endpoint'],
 			'urlResourceOwnerDetails' => $wgOAuth2Client['configuration']['api_endpoint'],
-			'scopes'				=> 'read_citizen_info'
+			'scopes'                  => $wgOAuth2Client['configuration']['scopes']
 		]);
 	}
 
@@ -65,7 +66,7 @@ class SpecialOAuth2Client extends SpecialPage {
 				$this->_default();
 			break;
 		}
-		
+
 	}
 
 	private function _redirect() {
@@ -130,12 +131,12 @@ class SpecialOAuth2Client extends SpecialPage {
 
 	private function _default(){
 		global $wgOAuth2Client, $wgOut, $wgUser, $wgScriptPath, $wgExtensionAssetsPath;
-		$sevice_name = ( isset( $wgOAuth2Client['configuration']['sevice_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['sevice_name'] ) ? $wgOAuth2Client['configuration']['sevice_name'] : 'OAuth2' );
+		$service_name = ( isset( $wgOAuth2Client['configuration']['service_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_name'] ) ? $wgOAuth2Client['configuration']['service_name'] : 'OAuth2' );
 
-		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $sevice_name)->text() );
+		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $service_name)->text() );
 		if ( !$wgUser->isLoggedIn() ) {
-			$wgOut->addWikiMsg( 'oauth2client-you-can-login-to-this-wiki-with-oauth2', $sevice_name );
-			$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2', $this->getTitle( 'redirect' )->getPrefixedURL(), $sevice_name );
+			$wgOut->addWikiMsg( 'oauth2client-you-can-login-to-this-wiki-with-oauth2', $service_name );
+			$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2', $this->getTitle( 'redirect' )->getPrefixedURL(), $service_name );
 
 		} else {
 			$wgOut->addWikiMsg( 'oauth2client-youre-already-loggedin' );

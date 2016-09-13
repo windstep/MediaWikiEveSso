@@ -1,10 +1,11 @@
 # MediaWiki OAuth2 Client
-
 MediaWiki implementation of the PHP League's [OAuth2 Client](https://github.com/thephpleague/oauth2-client), to allow MediaWiki to act as a client to any OAuth2 server. Currently maintained by [Schine GmbH](https://www.star-made.org/).
+
+Requires MediaWiki 1.25+.
 
 ## Installation
 
-Clone this repo into the extension directory. In the cloned directory, run 'git submodule init' to initialize the local configuration file, followed by 'git submodule update' to fetch all data from the OAuth2 client library.
+Clone this repo into the extension directory. In the cloned directory, run 'git submodule update --init' to initialize the local configuration file and fetch all data from the OAuth2 client library.
 
 Finally, run [composer](https://getcomposer.org/) in /vendors/oauth2-client to install the library dependency.
 
@@ -17,7 +18,7 @@ composer install
 Add the following line to your LocalSettings.php file.
 
 ```
-require_once "$IP/extensions/MW-OAuth2Client/OAuth2Client.php";
+wfLoadExtension( 'MW-OAuth2Client' );
 ```
 
 Required settings to be added to LocalSettings.php
@@ -52,6 +53,12 @@ $wgOAuth2Client['configuration']['service_name'] = 'Citizen Registry'; // the na
 $wgOAuth2Client['configuration']['service_login_link_text'] = 'Login with StarMade'; // the text of the login link
 
 ```
+
+### Popup Window
+To use a popup window to login to the external OAuth2 server, copy the JS from modal.js to the [MediaWiki:Common.js](https://www.mediawiki.org/wiki/Manual:Interface/JavaScript) page on your wiki.
+
+### Extension page
+https://www.mediawiki.org/wiki/Extension:OAuth2_Client
 
 ## License
 LGPL (GNU Lesser General Public License) http://www.gnu.org/licenses/lgpl.html

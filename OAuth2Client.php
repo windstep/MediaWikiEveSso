@@ -17,33 +17,6 @@
 if ( !defined( 'MEDIAWIKI' ) ) {
 	die( 'This is a MediaWiki extension, and must be run from within MediaWiki.' );
 }
-
-require __DIR__ . '/vendors/oauth2-client/vendor/autoload.php';
-
-
-$wgExtensionCredits['specialpage'][] = array(
-	'path' => __FILE__,
-	'name' => 'OAuth2 Client',
-	'version' => '0.2',
-	'author' => array( '[http://dekeijzer.org Joost de Keijzer]', '[https://www.mediawiki.org/wiki/User:Nischayn22 Nischay Nahata]', '[https://star-made.org Schine GmbH]' ),
-	'url' => 'https://github.com/Schine/MW-OAuth2Client',
-	'license-name' => "LGPL-3.0",
-	'descriptionmsg' => 'oauth2client-act-as-a-client-to-any-oauth2-server'
-);
-
-// Create a twiter group
-$wgGroupPermissions['oauth2'] = $wgGroupPermissions['user'];
-
-$wgAutoloadClasses['SpecialOAuth2Client'] = dirname(__FILE__) . '/SpecialOAuth2Client.php';
-
-$wgExtensionMessagesFiles['OAuth2Client'] = dirname(__FILE__) .'/OAuth2Client.i18n.php';
-$wgExtensionMessagesFiles['OAuth2ClientAlias'] = dirname(__FILE__) .'/OAuth2Client.alias.php';
-
-$wgSpecialPages['OAuth2Client'] = 'SpecialOAuth2Client';
-$wgSpecialPageGroups['OAuth2Client'] = 'login';
-
-$wgHooks['PersonalUrls'][] = 'OAuth2ClientHooks::onPersonalUrls';
-
 class OAuth2ClientHooks {
 	public static function onPersonalUrls( array &$personal_urls, Title $title ) {
 

@@ -1,16 +1,34 @@
 # MediaWiki OAuth2 Client
-MediaWiki implementation of the PHP League's [OAuth2 Client](https://github.com/thephpleague/oauth2-client), to allow MediaWiki to act as a client to any OAuth2 server. Currently maintained by [Schine GmbH](https://www.star-made.org/).
+Alpha version of an OAuth2 client that will allow users to create accounts and log in to MediaWiki using 
+[EVE Online's SSO](https://eveonline-third-party-documentation.readthedocs.io/en/latest/sso/intro.html) service. The *Login*
+and *Create Account* links will be replaced with a *LOG IN with EVE Online* button
 
-Requires MediaWiki 1.25+.
+This is a fork of the generic [Schine/MW-OAuth2Client](https://github.com/Schine/MW-OAuth2Client) implementation ()currently 
+maintained by [Schine GmbH](https://www.star-made.org/)) which uses  the PHP League's [OAuth2 Client](https://github.com/thephpleague/oauth2-client)
+under the hood.
+
+Currently Requires MediaWiki 1.25+.
 
 ## Installation
 
-Clone this repo into the extension directory. In the cloned directory, run 'git submodule update --init' to initialize the local configuration file and fetch all data from the OAuth2 client library.
+Clone this repo into a `MW-EVE-SSO` directory in the `extension` directory:
+```
+$ cd extension
+$ git clone git@github.com:mostertb/MW-EVE-SSO.git
+```
 
-Finally, run [composer](https://getcomposer.org/) in /vendors/oauth2-client to install the library dependency.
+Next run 'git submodule update --init' in the cloned directory. This will initialize the local configuration file and fetch all data from the OAuth2 client library.
 
 ```
-composer install
+$ cd MW-EVE-SSO
+$ git submodule update --init
+```
+
+
+Finally, run [composer](https://getcomposer.org/) in `vendors/oauth2-client` to install the library dependencies.
+```
+$ cd vendors/oauth2-client
+$ composer install --no-dev
 ```
 
 ## Usage
@@ -21,8 +39,8 @@ Add the following line to your LocalSettings.php file.
 wfLoadExtension( 'MW-EVE-SSO' );
 ```
 
-Required settings to be added to LocalSettings.php
-
+Required settings to be added to `LocalSettings.php`
+You can  get a client ID and Secret by registering an SSO Application for your wiki on the [EVE Developers](https://developers.eveonline.com/) site 
 ```
 $wgOAuth2Client['client']['id']     = ''; // The client ID assigned to you by the provider
 $wgOAuth2Client['client']['secret'] = ''; // The client secret assigned to you by the provider
@@ -46,7 +64,8 @@ $wgOAuth2Client['configuration']['allowed_corporation_ids'] = []; // All members
 To use a popup window to login to the external OAuth2 server, copy the JS from modal.js to the [MediaWiki:Common.js](https://www.mediawiki.org/wiki/Manual:Interface/JavaScript) page on your wiki.
 
 ### Login Button Styling
-MediaWiki:Common.css
+In order to replace the login link with an official *LOG IN with EVE Online* button you need to adde the following CSS
+to the [MediaWiki:Common.css](https://www.mediawiki.org/wiki/Manual:Interface/Stylesheets) page on your wiki
 
 ```CSS
 /* Style oAuth Login link with 'LOG IN with EVE Online' image */
@@ -59,7 +78,6 @@ a.btn_mwevesso_login{
     height: 30px;
 }
 ```
-
 
 ## License
 LGPL (GNU Lesser General Public License) http://www.gnu.org/licenses/lgpl.html

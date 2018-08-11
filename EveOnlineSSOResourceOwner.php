@@ -16,13 +16,22 @@ class EveOnlineSSOResourceOwner implements ResourceOwnerInterface
     protected $response;
 
     /**
+     * Response from the /characters/ ESI endpoint
+     *
+     * @var array
+     */
+    protected $characterInfo;
+
+    /**
      * Creates new resource owner.
      *
      * @param array $response
+     * @param array $characterInfo Response from the /characters/ ESI endpoint
      */
-    public function __construct(array $response)
+    public function __construct(array $response, array $characterInfo)
     {
         $this->response = $response;
+        $this->characterInfo = $characterInfo;
     }
 
     /**
@@ -73,6 +82,16 @@ class EveOnlineSSOResourceOwner implements ResourceOwnerInterface
     public function getCharacterOwnerHash()
     {
         return $this->response['CharacterOwnerHash'];
+    }
+
+    /**
+     * Get the ID of the Corporation that the Character currently belongs
+     *
+     * @return int
+     */
+    public function getCorporationId()
+    {
+        return $this->characterInfo['corporation_id'];
     }
 
     /**

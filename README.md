@@ -18,7 +18,7 @@ composer install
 Add the following line to your LocalSettings.php file.
 
 ```
-wfLoadExtension( 'MW-OAuth2Client' );
+wfLoadExtension( 'MW-EVE-SSO' );
 ```
 
 Required settings to be added to LocalSettings.php
@@ -26,14 +26,7 @@ Required settings to be added to LocalSettings.php
 ```
 $wgOAuth2Client['client']['id']     = ''; // The client ID assigned to you by the provider
 $wgOAuth2Client['client']['secret'] = ''; // The client secret assigned to you by the provider
-
-$wgOAuth2Client['configuration']['authorize_endpoint']     = ''; // Authorization URL
-$wgOAuth2Client['configuration']['access_token_endpoint']  = ''; // Token URL
-$wgOAuth2Client['configuration']['api_endpoint']           = ''; // URL to fetch user JSON
 $wgOAuth2Client['configuration']['redirect_uri']           = ''; // URL for OAuth2 server to redirect to
-
-$wgOAuth2Client['configuration']['username'] = 'username'; // JSON path to username
-$wgOAuth2Client['configuration']['email'] = 'email'; // JSON path to email
 ```
 
 The **Redirect URI** for your wiki should be:
@@ -42,16 +35,11 @@ The **Redirect URI** for your wiki should be:
 http://your.wiki.domain/path/to/wiki/Special:OAuth2Client/callback
 ```
 
-Optional further configuration
+Configure which EVE characters are allowed to log in 
 
 ```
-$wgOAuth2Client['configuration']['http_bearer_token'] = 'Bearer'; // Token to use in HTTP Authentication
-$wgOAuth2Client['configuration']['query_parameter_token'] = 'auth_token'; // query parameter to use
-$wgOAuth2Client['configuration']['scopes'] = 'read_citizen_info'; //Permissions
-
-$wgOAuth2Client['configuration']['service_name'] = 'Citizen Registry'; // the name of your service
-$wgOAuth2Client['configuration']['service_login_link_text'] = 'Login with StarMade'; // the text of the login link
-
+$wgOAuth2Client['configuration']['allowed_character_ids'] = []; // Specify specific characters here
+$wgOAuth2Client['configuration']['allowed_corporation_ids'] = []; // All members of these corporations will be abe to log in
 ```
 
 ### Popup Window
@@ -72,8 +60,6 @@ a.btn_mwevesso_login{
 }
 ```
 
-### Extension page
-https://www.mediawiki.org/wiki/Extension:OAuth2_Client
 
 ## License
 LGPL (GNU Lesser General Public License) http://www.gnu.org/licenses/lgpl.html

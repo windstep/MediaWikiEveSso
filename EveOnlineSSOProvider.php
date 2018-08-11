@@ -104,11 +104,17 @@ class EveOnlineSSOProvider extends AbstractProvider
      * @param  AccessToken $token
      *
      * @return ResourceOwnerInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function createResourceOwner(array $response, AccessToken $token)
     {
-        dump($response);
-        die();
-        return new EveOnlineSSOResourceOwner($response);
+        // Retrieve additional information about the Character from ESI
+        $characterInfo = $this->parseJson(
+            $this->getHttpClient()->request('get', 'https://esi.evetech.net/v4/characters/'.$response['CharacterID'] .'/')
+                                  ->getBody()
+                                  ->getContents()
+        );
+
+        return new EveOnlineSSOResourceOwner($response, $characterInfo);
     }
 }

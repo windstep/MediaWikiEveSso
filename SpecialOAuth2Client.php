@@ -27,19 +27,15 @@ class SpecialOAuth2Client extends SpecialPage {
 	 *
 	 * $wgOAuth2Client['client']['id']
 	 * $wgOAuth2Client['client']['secret']
-	 * //$wgOAuth2Client['client']['callback_url'] // extension should know
-	 *
-	 * $wgOAuth2Client['configuration']['authorize_endpoint']
-	 * $wgOAuth2Client['configuration']['access_token_endpoint']
-	 * $wgOAuth2Client['configuration']['http_bearer_token']
-	 * $wgOAuth2Client['configuration']['query_parameter_token']
-	 * $wgOAuth2Client['configuration']['api_endpoint']
+     * $wgOAuth2Client['configuration']['redirect_uri']
+     *
+     * $wgOAuth2Client['configuration']['allowed_corporation_ids']
+     * $wgOAuth2Client['configuration']['allowed_character_ids']
 	 */
 	public function __construct() {
 
-		parent::__construct('OAuth2Client'); // ???: wat doet dit?
-		global $wgOAuth2Client, $wgScriptPath;
-		global $wgServer, $wgArticlePath;
+		parent::__construct('OAuth2Client');
+		global $wgOAuth2Client;
 
 		require __DIR__ . '/vendors/oauth2-client/vendor/autoload.php';
 
@@ -48,16 +44,6 @@ class SpecialOAuth2Client extends SpecialPage {
             'clientSecret'            => $wgOAuth2Client['client']['secret'],   // The client password assigned to you by the provider
             'redirectUri'             => $wgOAuth2Client['configuration']['redirect_uri']
         ]);
-
-//		$this->_provider = new \League\OAuth2\Client\Provider\GenericProvider([
-//			'clientId'                => $wgOAuth2Client['client']['id'],    // The client ID assigned to you by the provider
-//			'clientSecret'            => $wgOAuth2Client['client']['secret'],   // The client password assigned to you by the provider
-//			'redirectUri'             => $wgOAuth2Client['configuration']['redirect_uri'],
-//			'urlAuthorize'            => $wgOAuth2Client['configuration']['authorize_endpoint'],
-//			'urlAccessToken'          => $wgOAuth2Client['configuration']['access_token_endpoint'],
-//			'urlResourceOwnerDetails' => $wgOAuth2Client['configuration']['api_endpoint'],
-//			'scopes'                  => $wgOAuth2Client['configuration']['scopes']
-//		]);
 	}
 
 	// default method being called by a specialpage
@@ -108,14 +94,16 @@ class SpecialOAuth2Client extends SpecialPage {
 				'code' => $_GET['code']
 			]);
 		} catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
-
 			// Failed to get the access token or user details.
-			exit($e->getMessage());
-
+            throw new MWException('Retrieving access token failed',0, $e);
 		}
 
-        /** @var EveOnlineSSOResourceOwner $resourceOwner */
-        $resourceOwner = $this->_provider->getResourceOwner($accessToken);
+		try{
+            /** @var EveOnlineSSOResourceOwner $resourceOwner */
+            $resourceOwner = $this->_provider->getResourceOwner($accessToken);
+        } catch (\Exception $e){
+            throw new MWException('Unable to retrieve character information. Please try again later',0, $e);
+        }
 		$user = $this->_userHandling( $resourceOwner );
 		$user->setCookies();
 
@@ -136,7 +124,7 @@ class SpecialOAuth2Client extends SpecialPage {
 	}
 
 	private function _default(){
-		global $wgOAuth2Client, $wgOut, $wgUser, $wgScriptPath, $wgExtensionAssetsPath;
+		global $wgOut, $wgUser;
 		$service_name = 'EVE Online SSO';
 
 		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $service_name)->text() );
@@ -158,6 +146,20 @@ class SpecialOAuth2Client extends SpecialPage {
      */
     protected function _userHandling( EveOnlineSSOResourceOwner $resourceOwner ) {
 		global $wgOAuth2Client, $wgAuth, $wgRequest;
+
+		$allowedCorporationIds = [];
+		if(isset( $wgOAuth2Client['configuration']['allowed_corporation_ids'] ) && 0 < count( $wgOAuth2Client['configuration']['allowed_corporation_ids'] )){
+		    $allowedCorporationIds = $wgOAuth2Client['configuration']['allowed_corporation_ids'];
+        }
+        $allowedCharacterIds = [];
+        if(isset( $wgOAuth2Client['configuration']['allowed_character_ids'] ) && 0 < count( $wgOAuth2Client['configuration']['allowed_character_ids'] )){
+            $allowedCharacterIds = $wgOAuth2Client['configuration']['allowed_character_ids'];
+        }
+
+        if(!in_array($resourceOwner->getCorporationId(), $allowedCorporationIds) && !in_array($resourceOwner->getCharacterID(), $allowedCharacterIds) ){
+            throw new MWException('The character that you authenticated ('.$resourceOwner->getCharacterName().
+                ') is not authorize to view this wiki');
+        }
 
 		$user = User::newFromName($resourceOwner->getCharacterName(), 'creatable');
 		if (!$user) {

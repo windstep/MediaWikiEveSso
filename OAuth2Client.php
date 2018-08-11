@@ -31,18 +31,11 @@ class OAuth2ClientHooks {
 		# see SkinTemplate->buildPersonalUrls()
 		$page = Title::newFromURL( $wgRequest->getVal( 'title', '' ) );
 
-		$service_name = isset( $wgOAuth2Client['configuration']['service_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_name'] ) ? $wgOAuth2Client['configuration']['service_name'] : 'OAuth2';
-		if( isset( $wgOAuth2Client['configuration']['service_login_link_text'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_login_link_text'] ) ) {
-			$service_login_link_text = $wgOAuth2Client['configuration']['service_login_link_text'];
-		} else {
-			$service_login_link_text = wfMessage('oauth2client-header-link-text', $service_name)->text();
-		}
-
 		$inExt = ( null == $page || ('OAuth2Client' == substr( $page->getText(), 0, 12) ) || strstr($page->getText(), 'Logout') );
 		$personal_urls['anon_oauth_login'] = array(
-			'text' => $service_login_link_text,
-			//'class' => ,
-			'active' => false,
+            'text' => 'LOG IN with EVE Online',
+			'class' => 'btn_mwevesso_login',
+			'active' => false
 		);
 		if( $inExt ) {
 			$personal_urls['anon_oauth_login']['href'] = Skin::makeSpecialUrlSubpage( 'OAuth2Client', 'redirect' );
@@ -59,11 +52,13 @@ class OAuth2ClientHooks {
 			);
 		}
 
-		if( isset( $personal_urls['anonlogin'] ) ) {
-			if( $inExt ) {
-				$personal_urls['anonlogin']['href'] = Skin::makeSpecialUrl( 'Userlogin' );
-			}
-		}
+		// Remove default login links
+        unset($personal_urls['login']);
+        unset($personal_urls['anonlogin']);
+
+        // Remove account creation link
+        unset($personal_urls['createaccount']);
+
 		return true;
 	}
 

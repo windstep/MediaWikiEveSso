@@ -57,6 +57,21 @@ $wgOAuth2Client['configuration']['service_login_link_text'] = 'Login with StarMa
 ### Popup Window
 To use a popup window to login to the external OAuth2 server, copy the JS from modal.js to the [MediaWiki:Common.js](https://www.mediawiki.org/wiki/Manual:Interface/JavaScript) page on your wiki.
 
+### Login Button Styling
+MediaWiki:Common.css
+
+```CSS
+/* Style oAuth Login link with 'LOG IN with EVE Online' image */
+a.btn_mwevesso_login{
+    background-image: url(https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-black-small.png);
+    display: block;
+    margin: -10px auto;
+    text-indent: -9999px;
+    width: 195px;
+    height: 30px;
+}
+```
+
 ### Extension page
 https://www.mediawiki.org/wiki/Extension:OAuth2_Client
 

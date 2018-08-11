@@ -1,18 +1,21 @@
 {
-	"name": "MW-OAuth2Client",
-	"version": "0.3",
+	"name": "MW-EVE-SSO",
+	"version": "0.1",
 	"author": [
 		"[http://dekeijzer.org Joost de Keijzer]",
 		"[https://www.mediawiki.org/wiki/User:Nischayn22 Nischay Nahata]",
-		"[https://star-made.org Schine GmbH]"
+		"[https://star-made.org Schine GmbH]",
+		"[https://github.com/mostertb Brad Mostert]"
 	],
 	"url": "https://www.mediawiki.org/wiki/Extension:OAuth2_Client",
-	"descriptionmsg": "oauth2client-act-as-a-client-to-any-oauth2-server",
+	"descriptionmsg": "oauth2client-act-as-a-client-to-eve-online-sso",
 	"license-name": "LGPL-3.0",
 	"type": "other",
 	"AutoloadClasses": {
 		"OAuth2ClientHooks": "OAuth2Client.php",
-		"SpecialOAuth2Client": "SpecialOAuth2Client.php"
+		"SpecialOAuth2Client": "SpecialOAuth2Client.php",
+		"EveOnlineSSOProvider": "EveOnlineSSOProvider.php",
+		"EveOnlineSSOResourceOwner": "EveOnlineSSOResourceOwner.php"
 	},
 	"ExtensionMessagesFiles": {
 		"OAuth2ClientAlias": "OAuth2Client.alias.php"

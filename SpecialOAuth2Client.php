@@ -43,15 +43,21 @@ class SpecialOAuth2Client extends SpecialPage {
 
 		require __DIR__ . '/vendors/oauth2-client/vendor/autoload.php';
 
-		$this->_provider = new \League\OAuth2\Client\Provider\GenericProvider([
-			'clientId'                => $wgOAuth2Client['client']['id'],    // The client ID assigned to you by the provider
-			'clientSecret'            => $wgOAuth2Client['client']['secret'],   // The client password assigned to you by the provider
-			'redirectUri'             => $wgOAuth2Client['configuration']['redirect_uri'],
-			'urlAuthorize'            => $wgOAuth2Client['configuration']['authorize_endpoint'],
-			'urlAccessToken'          => $wgOAuth2Client['configuration']['access_token_endpoint'],
-			'urlResourceOwnerDetails' => $wgOAuth2Client['configuration']['api_endpoint'],
-			'scopes'                  => $wgOAuth2Client['configuration']['scopes']
-		]);
+		$this->_provider = new EveOnlineSSOProvider([
+            'clientId'                => $wgOAuth2Client['client']['id'],    // The client ID assigned to you by the provider
+            'clientSecret'            => $wgOAuth2Client['client']['secret'],   // The client password assigned to you by the provider
+            'redirectUri'             => $wgOAuth2Client['configuration']['redirect_uri']
+        ]);
+
+//		$this->_provider = new \League\OAuth2\Client\Provider\GenericProvider([
+//			'clientId'                => $wgOAuth2Client['client']['id'],    // The client ID assigned to you by the provider
+//			'clientSecret'            => $wgOAuth2Client['client']['secret'],   // The client password assigned to you by the provider
+//			'redirectUri'             => $wgOAuth2Client['configuration']['redirect_uri'],
+//			'urlAuthorize'            => $wgOAuth2Client['configuration']['authorize_endpoint'],
+//			'urlAccessToken'          => $wgOAuth2Client['configuration']['access_token_endpoint'],
+//			'urlResourceOwnerDetails' => $wgOAuth2Client['configuration']['api_endpoint'],
+//			'scopes'                  => $wgOAuth2Client['configuration']['scopes']
+//		]);
 	}
 
 	// default method being called by a specialpage
@@ -90,7 +96,11 @@ class SpecialOAuth2Client extends SpecialPage {
 		$wgOut->redirect( $authorizationUrl );
 	}
 
-	private function _handleCallback(){
+    /**
+     * @return bool
+     * @throws MWException
+     */
+    private function _handleCallback(){
 		try {
 
 			// Try to get an access token using the authorization code grant.
@@ -104,8 +114,9 @@ class SpecialOAuth2Client extends SpecialPage {
 
 		}
 
-		$resourceOwner = $this->_provider->getResourceOwner($accessToken);
-		$user = $this->_userHandling( $resourceOwner->toArray() );
+        /** @var EveOnlineSSOResourceOwner $resourceOwner */
+        $resourceOwner = $this->_provider->getResourceOwner($accessToken);
+		$user = $this->_userHandling( $resourceOwner );
 		$user->setCookies();
 
 		global $wgOut, $wgRequest;
@@ -126,7 +137,7 @@ class SpecialOAuth2Client extends SpecialPage {
 
 	private function _default(){
 		global $wgOAuth2Client, $wgOut, $wgUser, $wgScriptPath, $wgExtensionAssetsPath;
-		$service_name = ( isset( $wgOAuth2Client['configuration']['service_name'] ) && 0 < strlen( $wgOAuth2Client['configuration']['service_name'] ) ? $wgOAuth2Client['configuration']['service_name'] : 'OAuth2' );
+		$service_name = 'EVE Online SSO';
 
 		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $service_name)->text() );
 		if ( !$wgUser->isLoggedIn() ) {
@@ -139,26 +150,24 @@ class SpecialOAuth2Client extends SpecialPage {
 		return true;
 	}
 
-	protected function _userHandling( $response ) {
+    /**
+     * @param EveOnlineSSOResourceOwner $resourceOwner
+     *
+     * @return bool|User
+     * @throws MWException
+     */
+    protected function _userHandling( EveOnlineSSOResourceOwner $resourceOwner ) {
 		global $wgOAuth2Client, $wgAuth, $wgRequest;
 
-		$username = $response['user'][$wgOAuth2Client['configuration']['username']];
-		$email = $response['user'][$wgOAuth2Client['configuration']['email']];
-
-		$user = User::newFromName($username, 'creatable');
+		$user = User::newFromName($resourceOwner->getCharacterName(), 'creatable');
 		if (!$user) {
-			throw new MWException('Could not create user with username:' . $username);
-			die();
+			throw new MWException('Could not create user with EVE Character Name as username:' . $resourceOwner->getCharacterName());
 		}
-		$user->setRealName($username);
-		$user->setEmail($email);
+
 		$user->load();
 		if ( !( $user instanceof User && $user->getId() ) ) {
+            $user->setRealName($resourceOwner->getCharacterName());
 			$user->addToDatabase();
-			// MediaWiki recommends below code instead of addToDatabase to create user but it seems to fail.
-			// $authManager = MediaWiki\Auth\AuthManager::singleton();
-			// $authManager->autoCreateUser( $user, MediaWiki\Auth\AuthManager::AUTOCREATE_SOURCE_SESSION );
-			$user->confirmEmail();
 		}
 		$user->setToken();
 

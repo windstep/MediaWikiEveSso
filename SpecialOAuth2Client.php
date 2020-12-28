@@ -51,16 +51,37 @@ class SpecialOAuth2Client extends SpecialPage {
 		$this->setHeaders();
 		switch($parameter){
 			case 'redirect':
-				$this->_redirect();
+				try
+				{
+					$this->_redirect();
+				}
+				catch (\Exception $e){
+					$this->_showError($e->getMessage());
+				}
 			break;
 			case 'callback':
-				$this->_handleCallback();
+				try
+				{
+					$this->_handleCallback();
+				}
+				catch (\Exception $e){
+					$this->_showError($e->getMessage());
+				}
 			break;
 			default:
 				$this->_default();
 			break;
 		}
 
+	}
+	private function _showError($error_msg)
+	{
+		global $wgOut, $wgUser;
+		$service_name = 'EVE Online SSO';
+
+		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $service_name)->text() );
+		$wgOut->addWikiMsg( 'oauth2client-error', $error_msg );
+		
 	}
 
 	private function _redirect() {
@@ -116,7 +137,7 @@ class SpecialOAuth2Client extends SpecialPage {
 			$wgRequest->getSession()->save();
 		}
 
-		if( !$title instanceof Title || 0 > $title->mArticleID ) {
+		if( !$title instanceof Title || 0 > $title->getArticleID ) {
 			$title = Title::newMainPage();
 		}
 		$wgOut->redirect( $title->getFullURL() );

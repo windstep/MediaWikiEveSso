@@ -9,5 +9,6 @@
 	"oauth2client-youre-already-loggedin": "You're already logged in.",
 	"oauth2client-logout-header": "$1 logged out",
 	"oauth2client-logged-out": "You have been logged out of this wiki.",
-	"oauth2client-login-with-oauth2-again": "[[$1|You can login again with your $2 account]]"
+	"oauth2client-login-with-oauth2-again": "[[$1|You can login again with your $2 account]]",
+	"oauth2client-error": "'''Error''':$1"
 }

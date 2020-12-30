@@ -168,6 +168,11 @@ class SpecialOAuth2Client extends SpecialPage {
     protected function _userHandling( EveOnlineSSOResourceOwner $resourceOwner ) {
 		global $wgOAuth2Client, $wgAuth, $wgRequest;
 
+		$allowedAllianceIds = [];
+		if(isset( $wgOAuth2Client['configuration']['allowed_alliance_ids'] ) && 0 < count( $wgOAuth2Client['configuration']['allowed_alliance_ids'] )){
+		    $allowedAllianceIds = $wgOAuth2Client['configuration']['allowed_alliance_ids'];
+        }
+
 		$allowedCorporationIds = [];
 		if(isset( $wgOAuth2Client['configuration']['allowed_corporation_ids'] ) && 0 < count( $wgOAuth2Client['configuration']['allowed_corporation_ids'] )){
 		    $allowedCorporationIds = $wgOAuth2Client['configuration']['allowed_corporation_ids'];
@@ -177,7 +182,7 @@ class SpecialOAuth2Client extends SpecialPage {
             $allowedCharacterIds = $wgOAuth2Client['configuration']['allowed_character_ids'];
         }
 
-        if(!in_array($resourceOwner->getCorporationId(), $allowedCorporationIds) && !in_array($resourceOwner->getCharacterID(), $allowedCharacterIds) ){
+        if(!in_array($resourceOwner->getAllianceId(), $allowedAllianceIds) && !in_array($resourceOwner->getCorporationId(), $allowedCorporationIds) && !in_array($resourceOwner->getCharacterID(), $allowedCharacterIds) ){
             throw new MWException('The character that you authenticated ('.$resourceOwner->getCharacterName().
                 ') is not authorize to view this wiki');
         }

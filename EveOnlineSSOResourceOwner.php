@@ -85,13 +85,23 @@ class EveOnlineSSOResourceOwner implements ResourceOwnerInterface
     }
 
     /**
-     * Get the ID of the Corporation that the Character currently belongs
+     * Get the ID of the Corporation that the Character currently belongs to
      *
      * @return int
      */
     public function getCorporationId()
     {
         return $this->characterInfo['corporation_id'];
+    }
+
+    /**
+     * Get the ID of the Alliance that the Character currently belongs to
+     *
+     * @return int
+     */
+    public function getAllianceId()
+    {
+        return $this->characterInfo['alliance_id'];
     }
 
     /**

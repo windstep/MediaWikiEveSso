@@ -58,6 +58,7 @@ Configure which EVE characters are allowed to log in
 ```
 $wgOAuth2Client['configuration']['allowed_character_ids'] = []; // Specify specific characters here
 $wgOAuth2Client['configuration']['allowed_corporation_ids'] = []; // All members of these corporations will be abe to log in
+$wgOAuth2Client['configuration']['allowed_alliance_ids'] = []; // All members of these alliances will be abe to log in
 ```
 
 ### Popup Window

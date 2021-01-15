@@ -126,7 +126,8 @@ class SpecialOAuth2Client extends SpecialPage {
             throw new MWException('Unable to retrieve character information. Please try again later',0, $e);
         }
 		$user = $this->_userHandling( $resourceOwner );
-		$user->setCookies();
+		$persist = $user->getOption('oauth-persist');
+		$user->setCookies(null,null,$persist);
 
 		global $wgOut, $wgRequest;
 		$title = null;
@@ -201,7 +202,6 @@ class SpecialOAuth2Client extends SpecialPage {
 
 		// Setup the session
 		$wgRequest->getSession()->persist();
-		$user->setCookies();
 		$this->getContext()->setUser( $user );
 		$user->saveSettings();
 		global $wgUser;

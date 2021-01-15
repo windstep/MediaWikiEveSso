@@ -18,6 +18,13 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 	die( 'This is a MediaWiki extension, and must be run from within MediaWiki.' );
 }
 class OAuth2ClientHooks {
+	public static function onGetPreferences($user, &$preferences){          
+		$preferences['oauth-persist'] = [                               
+				'type'=>'toggle',                                       
+				'label-message' => 'oauth-persist',                     
+				'section'=> 'misc'                                      
+		];                                                              																
+		}                                                                       
 	public static function onPersonalUrls( array &$personal_urls, Title $title ) {
 
 		global $wgOAuth2Client, $wgUser, $wgRequest;

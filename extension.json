@@ -23,6 +23,9 @@
 	"Hooks": {
 		"PersonalUrls": [
 			"OAuth2ClientHooks::onPersonalUrls"
+		],
+		"GetPreferences":[
+			"OAuth2ClientHooks::onGetPreferences"
 		]
 	},
 	"SpecialPages": {

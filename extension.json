@@ -5,20 +5,21 @@
 		"[http://dekeijzer.org Joost de Keijzer]",
 		"[https://www.mediawiki.org/wiki/User:Nischayn22 Nischay Nahata]",
 		"[https://star-made.org Schine GmbH]",
-		"[https://github.com/mostertb Brad Mostert]"
+		"[https://github.com/mostertb Brad Mostert]",
+		"[https://github.com/Yeeshani Yeeshani]"
 	],
 	"url": "https://www.mediawiki.org/wiki/Extension:OAuth2_Client",
 	"descriptionmsg": "oauth2client-act-as-a-client-to-eve-online-sso",
 	"license-name": "LGPL-3.0",
 	"type": "other",
 	"AutoloadClasses": {
-		"OAuth2ClientHooks": "OAuth2Client.php",
-		"SpecialOAuth2Client": "SpecialOAuth2Client.php",
-		"EveOnlineSSOProvider": "EveOnlineSSOProvider.php",
-		"EveOnlineSSOResourceOwner": "EveOnlineSSOResourceOwner.php"
+		"OAuth2ClientHooks": "includes/OAuth2Client.php",
+		"SpecialOAuth2Client": "includes/SpecialOAuth2Client.php",
+		"EveOnlineSSOProvider": "includes/EveOnlineSSOProvider.php",
+		"EveOnlineSSOResourceOwner": "includes/EveOnlineSSOResourceOwner.php"
 	},
 	"ExtensionMessagesFiles": {
-		"OAuth2ClientAlias": "OAuth2Client.alias.php"
+		"OAuth2ClientAlias": "includes/OAuth2Client.alias.php"
 	},
 	"Hooks": {
 		"PersonalUrls": [
@@ -26,6 +27,9 @@
 		],
 		"GetPreferences":[
 			"OAuth2ClientHooks::onGetPreferences"
+		],
+		"SecuritySensitiveOperationStatus":[
+			"OAuth2ClientHooks::onSecuritySensitiveOperationStatus"
 		]
 	},
 	"SpecialPages": {

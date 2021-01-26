@@ -201,13 +201,17 @@ class SpecialOAuth2Client extends SpecialPage {
 		$user->setToken();
 
 		// Setup the session
+		$wgRequest->getSession()->setSecret("hugs",time());
 		$wgRequest->getSession()->persist();
 		$this->getContext()->setUser( $user );
 		$user->saveSettings();
 		global $wgUser;
 		$wgUser = $user;
+
+		// why are these 2 lines here, they seem to do nothing helpful ?
 		$sessionUser = User::newFromSession($this->getRequest());
 		$sessionUser->load();
+
 		return $user;
 	}
 

@@ -17,6 +17,9 @@
 if ( !defined( 'MEDIAWIKI' ) ) {
 	die( 'This is a MediaWiki extension, and must be run from within MediaWiki.' );
 }
+
+use MediaWiki\Auth\AuthManager;
+
 class OAuth2ClientHooks {
 
 	public static function onSecuritySensitiveOperationStatus(&$status, $operation, $session, $timeSinceAuth){  
@@ -44,7 +47,7 @@ class OAuth2ClientHooks {
 				'section'=> 'misc'                                      
 		];                                                              																
 	}                                                                       
-	
+
 	public static function onPersonalUrls( array &$personal_urls, Title $title ) {
 
 		global $wgOAuth2Client, $wgUser, $wgRequest;

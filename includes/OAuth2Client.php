@@ -18,13 +18,33 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 	die( 'This is a MediaWiki extension, and must be run from within MediaWiki.' );
 }
 class OAuth2ClientHooks {
+
+	public static function onSecuritySensitiveOperationStatus(&$status, $operation, $session, $timeSinceAuth){  
+        if($operation !== "ChangeEmail")                                                                    
+        {                                                                                                   
+                return;                                                                                     
+        }                                                                                                   
+                                                                                                            
+        $time = time();                                                                                     
+        $login = $session->getSecret("hugs", 0);                                                            
+        $delta = abs($time - $login);                                                                       
+                                                                                                            
+        if($delta <300)                                                                                     
+        {                                                                                                   
+          $status =  AuthManager::SEC_OK;                                                                   
+          return;                                                                                           
+        }                                                                                                   
+        $status =  AuthManager::SEC_REAUTH;                                                                 
+	}                                                                                                           
+
 	public static function onGetPreferences($user, &$preferences){          
 		$preferences['oauth-persist'] = [                               
 				'type'=>'toggle',                                       
 				'label-message' => 'oauth-persist',                     
 				'section'=> 'misc'                                      
 		];                                                              																
-		}                                                                       
+	}                                                                       
+	
 	public static function onPersonalUrls( array &$personal_urls, Title $title ) {
 
 		global $wgOAuth2Client, $wgUser, $wgRequest;

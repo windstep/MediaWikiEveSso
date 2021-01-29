@@ -30,6 +30,9 @@
 		],
 		"SecuritySensitiveOperationStatus":[
 			"OAuth2ClientHooks::onSecuritySensitiveOperationStatus"
+		],
+		"AuthChangeFormFields":[
+			"OAuth2ClientHooks::onAuthChangeFormFields"
 		]
 	},
 	"SpecialPages": {

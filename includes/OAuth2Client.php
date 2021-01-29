@@ -22,6 +22,25 @@ use MediaWiki\Auth\AuthManager;
 
 class OAuth2ClientHooks {
 
+
+	public static function onAuthChangeFormFields($requests, $fieldInfo, &$formDescriptor, $action) {         
+        global $wgRequest;                                                                                
+        $url = "/index.php?title=Special:OAuth2Client/redirect";                                          
+		$ret = $wgRequest->getVal("returnto");                                                            
+		
+        if(!is_null($ret))                                                                                
+        {                                                                                                 
+                $url .= "&returnto=".$ret;                                                                
+        }                                                                                                 
+                                                                                                          
+        $formDescriptor["SSOLogin"] = [                                                                   
+                "section" => "oauth-login",                                                                  
+                "type" => "info",                                                                         
+                "default"=>'<a class = "btn_mwevesso_login" href="'.$url.'">Log in with Eve Online</a>',  
+                "raw"=>true                                                                               
+        ];                                                                                                
+	}                                                                                                         
+
 	public static function onSecuritySensitiveOperationStatus(&$status, $operation, $session, $timeSinceAuth){  
         if($operation !== "ChangeEmail")                                                                    
         {                                                                                                   

@@ -36,7 +36,7 @@ class OAuth2ClientHooks {
         $formDescriptor["SSOLogin"] = [                                                                   
                 "section" => "oauth-login",                                                                  
                 "type" => "info",                                                                         
-                "default"=>'<div style="text-align=centre"><a class = "btn_mwevesso_login" href="'.$url.'">Log in with Eve Online</a></div>',  
+                "default"=>'<div style="text-align: center"><a class = "btn_mwevesso_login" href="'.$url.'">Log in with Eve Online</a></div>',  
                 "raw"=>true                                                                               
         ];                                                                                                
 	}                                                                                                         

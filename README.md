@@ -72,8 +72,8 @@ to the [MediaWiki:Common.css](https://www.mediawiki.org/wiki/Manual:Interface/St
 /* Style oAuth Login link with 'LOG IN with EVE Online' image */
 a.btn_mwevesso_login{
     background-image: url(https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-black-small.png);
-    display: block;
-    margin: -10px auto;
+    display: inline-block;
+    margin: auto;
     text-indent: -9999px;
     width: 195px;
     height: 30px;

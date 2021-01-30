@@ -1,3 +1,4 @@
+/* This goes into your wikis MediaWiki:Common.js */
 /* Any JavaScript here will be loaded for all users on every page load. */
 $('li#pt-anon_oauth_login a').click(function(){
 	articlePath = mw.config.get('wgArticlePath');

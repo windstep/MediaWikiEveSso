@@ -29,7 +29,7 @@ class EveOnlineSSOProvider extends AbstractProvider
      */
     public function getBaseAuthorizationUrl()
     {
-        return $this->domain . '/oauth/authorize';
+        return $this->domain . '/v2/oauth/authorize';
     }
 
     /**
@@ -41,7 +41,7 @@ class EveOnlineSSOProvider extends AbstractProvider
      */
     public function getBaseAccessTokenUrl(array $params)
     {
-        return $this->domain . '/oauth/token';
+        return $this->domain . '/v2/oauth/token';
     }
 
     /**
@@ -53,7 +53,16 @@ class EveOnlineSSOProvider extends AbstractProvider
      */
     public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
-        return $this->domain . '/oauth/verify';
+        /**
+         * CCP deprecated this endpoint in favor of JWT tokens:
+         * > The oauth/verify endpoint will also be deprecated, since the v2 endpoints return a JWT token,
+         * > enabling your applications to validate the JWT tokens without having to make a request to the SSO for each token.
+         * > Applications can fetch the required EVE SSO metadata from https://login.eveonline.com/.well-known/oauth-authorization-server 
+         * > to be able to validate JWT token signatures client-side.
+         * 
+         * see also https://docs.esi.evetech.net/docs/sso/validating_eve_jwt.html
+         */
+        return null;
     }
 
     /**
@@ -116,5 +125,18 @@ class EveOnlineSSOProvider extends AbstractProvider
         );
 
         return new EveOnlineSSOResourceOwner($response, $characterInfo);
+    }
+
+    public function getResourceOwner(AccessToken $token)
+    {
+            $jwtexplode=json_decode(base64_decode(str_replace('_', '/', str_replace('-','+',explode('.',$token )[1]))));
+            $charactername=$jwtexplode->name;
+            $characterid=explode(":",$jwtexplode->sub)[2];
+            $response['CharacterName']=$charactername;
+            $response['CharacterID']=$characterid;
+            $response['CharacterOwnerHash']=$jwtexplode->owner;
+            $response['ExpiresOn']=date('Y-m-d\TH:i:s',$jwtexplode->exp);
+            $response['Scopes']=implode(" ",$jwtexplode->scp);
+            return $this->createResourceOwner($response, $token);
     }
 }

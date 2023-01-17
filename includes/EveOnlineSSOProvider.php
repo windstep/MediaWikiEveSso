@@ -6,6 +6,7 @@ use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
 use Psr\Http\Message\ResponseInterface;
+use Mediawiki\Logger\LoggerFactory;
 
 /**
  * Based on https://github.com/killmails/oauth2-eve/ and recreated in this project for security reasons
@@ -14,6 +15,12 @@ class EveOnlineSSOProvider extends AbstractProvider
 {
 
     use BearerAuthorizationTrait;
+
+    public function __construct(array $opts = [], array $colls = []){
+	    $this->logger = LoggerFactory::getInstance('EveOnlineSSOProvider');
+	    parent::__construct($opts,$colls);
+    }
+
 
     /**
      * Domain
@@ -117,14 +124,57 @@ class EveOnlineSSOProvider extends AbstractProvider
      */
     protected function createResourceOwner(array $response, AccessToken $token)
     {
-        // Retrieve additional information about the Character from ESI
+	    // Retrieve additional information about the Character from ESI
+
+	    // this endpoint hold the character name, but  is only updated every 7  days
         $characterInfo = $this->parseJson(
             $this->getHttpClient()->request('get', 'https://esi.evetech.net/v5/characters/'.$response['CharacterID'] .'/')
                                   ->getBody()
                                   ->getContents()
         );
+	$this->logger->debug('char: '.json_encode($characterInfo));
+        try
+	{		
+          // this endpoint is updated once an hour
+	  $newresponse=$this->getHttpClient()
+                           ->post(
+				'https://esi.evetech.net/latest/characters/affiliation/',
+				[
+					'body'=>json_encode( 
+						[
+							$response['CharacterID']
+						])
+				]
+				);
 
-        return new EveOnlineSSOResourceOwner($response, $characterInfo);
+	}
+	catch(Exception $e)
+	{
+		$this->logger->debug('error: '.$e->getMessage());
+	}
+
+ 	$charAffiliationAll = $this->parseJson($newresponse->getBody()->getContents());
+         
+	if(count($charAffiliationAll) != 1)
+	{
+
+		$characterInfo = [];
+	}
+	
+	$charAffiliation = $charAffiliationAll[0];
+
+	$this->logger->debug('char affiliation: '.json_encode($charAffiliation));
+
+	// replace the, maybe outdated, info with the fresher one
+	$characterInfo['corporation_id'] = $charAffiliation['corporation_id'];
+	$characterInfo['alliance_id'] = $charAffiliation['alliance_id'];
+
+	$this->logger->debug('char result: '.json_encode($characterInfo));
+
+
+	return new EveOnlineSSOResourceOwner($response, $characterInfo);
+
+
     }
 
     public function getResourceOwner(AccessToken $token)

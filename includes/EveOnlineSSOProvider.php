@@ -153,11 +153,11 @@ class EveOnlineSSOProvider extends AbstractProvider
 
 		$characterInfo = [];
 	}
-	
-	$characterInfo = $charAffiliationAll[0];
-
-	$this->logger->debug('char result: '.json_encode($characterInfo));
-
+	else
+	{	
+		$characterInfo = $charAffiliationAll[0];
+		$this->logger->debug('char result: '.json_encode($characterInfo));
+	}
 
 	return new EveOnlineSSOResourceOwner($response, $characterInfo);
     }

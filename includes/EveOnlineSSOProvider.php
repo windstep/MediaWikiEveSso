@@ -124,15 +124,8 @@ class EveOnlineSSOProvider extends AbstractProvider
      */
     protected function createResourceOwner(array $response, AccessToken $token)
     {
-	    // Retrieve additional information about the Character from ESI
-
-	    // this endpoint hold the character name, but  is only updated every 7  days
-        $characterInfo = $this->parseJson(
-            $this->getHttpClient()->request('get', 'https://esi.evetech.net/v5/characters/'.$response['CharacterID'] .'/')
-                                  ->getBody()
-                                  ->getContents()
-        );
-	$this->logger->debug('char: '.json_encode($characterInfo));
+	// Retrieve additional information about the Character from ESI
+	$characterInfo = [];
         try
 	{		
           // this endpoint is updated once an hour
@@ -161,20 +154,12 @@ class EveOnlineSSOProvider extends AbstractProvider
 		$characterInfo = [];
 	}
 	
-	$charAffiliation = $charAffiliationAll[0];
-
-	$this->logger->debug('char affiliation: '.json_encode($charAffiliation));
-
-	// replace the, maybe outdated, info with the fresher one
-	$characterInfo['corporation_id'] = $charAffiliation['corporation_id'];
-	$characterInfo['alliance_id'] = $charAffiliation['alliance_id'];
+	$characterInfo = $charAffiliationAll[0];
 
 	$this->logger->debug('char result: '.json_encode($characterInfo));
 
 
 	return new EveOnlineSSOResourceOwner($response, $characterInfo);
-
-
     }
 
     public function getResourceOwner(AccessToken $token)

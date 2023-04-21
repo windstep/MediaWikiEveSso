@@ -76,7 +76,7 @@ class SpecialOAuth2Client extends SpecialPage {
 	}
 	private function _showError($error_msg)
 	{
-		global $wgOut, $wgUser;
+		global $wgOut;
 		$service_name = 'EVE Online SSO';
 
 		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $service_name)->text() );
@@ -155,11 +155,12 @@ class SpecialOAuth2Client extends SpecialPage {
 	}
 
 	private function _default(){
-		global $wgOut, $wgUser;
+		global $wgOut;
+		$user = RequestContext::getMain()->getUser();
 		$service_name = 'EVE Online SSO';
 
 		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $service_name)->text() );
-		if ( !$wgUser->isLoggedIn() ) {
+		if ( !$user->isRegistered() ) {
 			$wgOut->addWikiMsg( 'oauth2client-you-can-login-to-this-wiki-with-oauth2', $service_name );
 			$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2', $this->getPagetitle( 'redirect' )->getPrefixedURL(), $service_name );
 
@@ -214,8 +215,7 @@ class SpecialOAuth2Client extends SpecialPage {
 		$wgRequest->getSession()->persist();
 		$this->getContext()->setUser( $user );
 		$user->saveSettings();
-		global $wgUser;
-		$wgUser = $user;
+                RequestContext::getMain()->setUser( $user );
 
 		// why are these 2 lines here, they seem to do nothing helpful ?
 		$sessionUser = User::newFromSession($this->getRequest());

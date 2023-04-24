@@ -14,7 +14,7 @@ Currently Requires MediaWiki 1.25+.
 Clone this repo into a `MW-EVE-SSO` directory in the `extension` directory:
 ```
 $ cd extension
-$ git clone git@github.com:mostertb/MW-EVE-SSO.git
+$ git clone git@github.com:Yeeshani/MW-EVE-SSO.git
 ```
 
 Next run 'git submodule update --init' in the cloned directory. This will initialize the local configuration file and fetch all data from the OAuth2 client library.

@@ -12,5 +12,5 @@
 	"oauth2client-login-with-oauth2-again": "[[$1|You can login again with your $2 account]]",
 	"oauth2client-error": "'''Error''':$1",
 	"oauth-persist": "Keep Eve SSO logged in (You need to log out and back in for a change to take effect)",
-	"oauth-login":"Eve Login"
+	"-oauth-login":"Eve Login"
 }

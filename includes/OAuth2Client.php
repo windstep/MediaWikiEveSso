@@ -22,7 +22,6 @@ use MediaWiki\Auth\AuthManager;
 
 class OAuth2ClientHooks {
 
-
 	public static function onAuthChangeFormFields($requests, $fieldInfo, &$formDescriptor, $action) {         
         global $wgRequest;                                                                                
         $url = "/index.php?title=Special:OAuth2Client/redirect";                                          
@@ -36,10 +35,10 @@ class OAuth2ClientHooks {
         $formDescriptor["SSOLogin"] = [                                                                   
                 "section" => "oauth-login",                                                                  
                 "type" => "info",                                                                         
-                "default"=>'<div style="text-align: center"><a class = "btn_mwevesso_login" href="'.$url.'">Log in with Eve Online</a></div>',  
+                "default"=>'<div style="text-align: center"><a class = "btn_mwevesso_login" href="'.$url.'">Log in with Eve Online</a></div>',
                 "raw"=>true                                                                               
         ];                                                                                                
-	}                                                                                                         
+	}  
 
 	public static function onSecuritySensitiveOperationStatus(&$status, $operation, $session, $timeSinceAuth){  
         if($operation !== "ChangeEmail")                                                                    
@@ -69,9 +68,8 @@ class OAuth2ClientHooks {
 
 	public static function onPersonalUrls( array &$personal_urls, Title $title ) {
 
-		global $wgOAuth2Client, $wgRequest;
-		$user = RequestContext::getMain()->getUser();
-		if( $user->isRegistered() ) return true;
+		global $wgOAuth2Client, $wgUser, $wgRequest;
+		if( $wgUser->isLoggedIn() ) return true;
 
 
 		# Due to bug 32276, if a user does not have read permissions,

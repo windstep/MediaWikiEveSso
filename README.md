@@ -14,7 +14,7 @@ Currently Requires MediaWiki 1.25+.
 Clone this repo into a `MW-EVE-SSO` directory in the `extension` directory:
 ```
 $ cd extension
-$ git clone git@github.com:Yeeshani/MW-EVE-SSO.git
+$ git clone https://github.com/Signal-Cartel/MediaWikiEveSso.git MW-EVE-SSO
 ```
 
 Next run 'git submodule update --init' in the cloned directory. This will initialize the local configuration file and fetch all data from the OAuth2 client library.
@@ -58,7 +58,6 @@ Configure which EVE characters are allowed to log in
 ```
 $wgOAuth2Client['configuration']['allowed_character_ids'] = []; // Specify specific characters here
 $wgOAuth2Client['configuration']['allowed_corporation_ids'] = []; // All members of these corporations will be abe to log in
-$wgOAuth2Client['configuration']['allowed_alliance_ids'] = []; // All members of these alliances will be abe to log in
 ```
 
 ### Popup Window
@@ -72,8 +71,8 @@ to the [MediaWiki:Common.css](https://www.mediawiki.org/wiki/Manual:Interface/St
 /* Style oAuth Login link with 'LOG IN with EVE Online' image */
 a.btn_mwevesso_login{
     background-image: url(https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-black-small.png);
-    display: inline-block;
-    margin: auto;
+    display: block;
+    margin: -10px auto;
     text-indent: -9999px;
     width: 195px;
     height: 30px;

@@ -11,6 +11,17 @@ Currently Requires MediaWiki 1.25+.
 
 ## Installation
 
+Build the composer for the version of PHP you are using in the webserver
+(this does not work, if you use the version you want to migrate to!)
+```
+$ /usr/bin/php7.4-cli -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+$ /usr/bin/php7.4-cli ./composer-setup.php
+```
+Then you can run composer in the PHP directories like:
+```
+$ /usr/bin/php7.4-cli ~/composer/composer.phar update
+```
+
 Clone this repo into a `MW-EVE-SSO` directory in the `extension` directory:
 ```
 $ cd extension

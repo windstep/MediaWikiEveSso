@@ -100,14 +100,14 @@ class OAuth2ClientHooks {
 			);
 		}
 
-		// Remove default login links
-        unset($personal_urls['login']);
-        unset($personal_urls['anonlogin']);
+    // Remove default login links
+    unset($personal_urls['login']);
+    unset($personal_urls['anonlogin']);
 
-        // Remove account creation link
-        unset($personal_urls['createaccount']);
+    // Remove account creation link
+    unset($personal_urls['createaccount']);
 
-		return true;
+    return true;
 	}
 
 }

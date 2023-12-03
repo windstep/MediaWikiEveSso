@@ -24,7 +24,7 @@ $ /usr/bin/php7.4-cli ~/composer/composer.phar update
 
 Clone this repo into a `MW-EVE-SSO` directory in the `extension` directory:
 ```
-$ cd extension
+$ cd extensions
 $ git clone https://github.com/Signal-Cartel/MediaWikiEveSso.git MW-EVE-SSO
 ```
 

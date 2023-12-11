@@ -171,7 +171,9 @@ class EveOnlineSSOProvider extends AbstractProvider
             $response['CharacterID']=$characterid;
             $response['CharacterOwnerHash']=$jwtexplode->owner;
             $response['ExpiresOn']=date('Y-m-d\TH:i:s',$jwtexplode->exp);
-            $response['Scopes']=implode(" ",$jwtexplode->scp);
+            # scp no longer seems to be returned, not sure why
+            # $response['Scopes']=implode(" ",$jwtexplode->scp);
+            $response['Scopes']="";
             return $this->createResourceOwner($response, $token);
     }
 }

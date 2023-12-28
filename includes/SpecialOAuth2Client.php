@@ -158,7 +158,9 @@ class SpecialOAuth2Client extends SpecialPage {
 		$service_name = 'EVE Online SSO';
 
 		$wgOut->setPagetitle( wfMessage( 'oauth2client-login-header', $service_name)->text() );
-		if ( !$wgUser->isLoggedIn() ) {
+	# if ( !$wgUser->isLoggedIn() ) {
+	# I hope the replacement of !isLoggedIn() with isAnon() is the proper way to handle this
+		if ( $wgUser->isAnon() ) {
 			$wgOut->addWikiMsg( 'oauth2client-you-can-login-to-this-wiki-with-oauth2', $service_name );
 			$wgOut->addWikiMsg( 'oauth2client-login-with-oauth2', $this->getPagetitle( 'redirect' )->getPrefixedURL(), $service_name );
 

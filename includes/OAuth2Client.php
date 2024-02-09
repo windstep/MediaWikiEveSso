@@ -19,7 +19,6 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 }
 
 use MediaWiki\Auth\AuthManager;
-use MediaWiki\Skin\SkinComponentUtils;
 
 class OAuth2ClientHooks {
 

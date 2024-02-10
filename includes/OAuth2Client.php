@@ -73,12 +73,6 @@ class OAuth2ClientHooks {
         $user = RequestContext::getMain()->getUser();
 		if( $user->isRegistered() ) return true;
 
-
-		# Due to bug 32276, if a user does not have read permissions,
-		# $this->getTitle() will just give Special:Badtitle, which is
-		# not especially useful as a returnto parameter. Use the title
-		# from the request instead, if there was one.
-		# see SkinTemplate->buildPersonalUrls()
 		$page = Title::newFromURL( $wgRequest->getVal( 'title', '' ) );
 
 		$inExt = ( null == $page || ('OAuth2Client' == substr( $page->getText(), 0, 12) ) || strstr($page->getText(), 'Logout') );
@@ -90,11 +84,6 @@ class OAuth2ClientHooks {
 		if( $inExt ) {
 			$links['user-menu']['anon_oauth_login']['href'] = Skin::makeSpecialUrlSubpage( 'OAuth2Client', 'redirect' );
 		} else {
-			# Due to bug 32276, if a user does not have read permissions,
-			# $this->getTitle() will just give Special:Badtitle, which is
-			# not especially useful as a returnto parameter. Use the title
-			# from the request instead, if there was one.
-			# see SkinTemplate->buildPersonalUrls()
 			$links['user-menu']['anon_oauth_login']['href'] = Skin::makeSpecialUrlSubpage(
 				'OAuth2Client',
 				'redirect',

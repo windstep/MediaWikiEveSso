@@ -22,8 +22,8 @@
 		"OAuth2ClientAlias": "includes/OAuth2Client.alias.php"
 	},
 	"Hooks": {
-		"PersonalUrls": [
-			"OAuth2ClientHooks::onPersonalUrls"
+		"SkinTemplateNavigation::Universal": [
+			"OAuth2ClientHooks::onSkinTemplateNavigationUniversal"
 		],
 		"GetPreferences":[
 			"OAuth2ClientHooks::onGetPreferences"

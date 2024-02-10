@@ -66,36 +66,25 @@ class OAuth2ClientHooks {
 		];                                                              																
 	}                                                                       
 
-	public static function onPersonalUrls( array &$personal_urls, Title $title ) {
+	public static function onSkinTemplateNavigationUniversal( SkinTemplate $sktemplate, array &$links) {
 
-		global $wgOAuth2Client, $wgUser, $wgRequest;
-    # if( $wgUser->isLoggedIn() ) return true;
-    # I hope the replacement of isLoggedIn() with !isAnon() is the proper way to handle this
-    if( !$wgUser->isAnon() ) return true;
+		global $wgOAuth2Client, $wgRequest;
+    
+        $user = RequestContext::getMain()->getUser();
+		if( $user->isRegistered() ) return true;
 
-
-		# Due to bug 32276, if a user does not have read permissions,
-		# $this->getTitle() will just give Special:Badtitle, which is
-		# not especially useful as a returnto parameter. Use the title
-		# from the request instead, if there was one.
-		# see SkinTemplate->buildPersonalUrls()
 		$page = Title::newFromURL( $wgRequest->getVal( 'title', '' ) );
 
 		$inExt = ( null == $page || ('OAuth2Client' == substr( $page->getText(), 0, 12) ) || strstr($page->getText(), 'Logout') );
-		$personal_urls['anon_oauth_login'] = array(
+		$links['user-menu']['anon_oauth_login'] = array(
             'text' => 'LOG IN with EVE Online',
 			'class' => 'btn_mwevesso_login',
 			'active' => false
 		);
 		if( $inExt ) {
-			$personal_urls['anon_oauth_login']['href'] = Skin::makeSpecialUrlSubpage( 'OAuth2Client', 'redirect' );
+			$links['user-menu']['anon_oauth_login']['href'] = Skin::makeSpecialUrlSubpage( 'OAuth2Client', 'redirect' );
 		} else {
-			# Due to bug 32276, if a user does not have read permissions,
-			# $this->getTitle() will just give Special:Badtitle, which is
-			# not especially useful as a returnto parameter. Use the title
-			# from the request instead, if there was one.
-			# see SkinTemplate->buildPersonalUrls()
-			$personal_urls['anon_oauth_login']['href'] = Skin::makeSpecialUrlSubpage(
+			$links['user-menu']['anon_oauth_login']['href'] = Skin::makeSpecialUrlSubpage(
 				'OAuth2Client',
 				'redirect',
 				wfArrayToCGI( array( 'returnto' => $page ) )
@@ -103,11 +92,11 @@ class OAuth2ClientHooks {
 		}
 
     // Remove default login links
-    unset($personal_urls['login']);
-    unset($personal_urls['anonlogin']);
+    unset($links['user-menu']['login']);
+    unset($links['user-menu']['anonlogin']);
 
     // Remove account creation link
-    unset($personal_urls['createaccount']);
+    unset($links['user-menu']['createaccount']);
 
     return true;
 	}

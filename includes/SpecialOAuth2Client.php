@@ -192,7 +192,9 @@ class SpecialOAuth2Client extends SpecialPage {
             $allowedCharacterIds = $wgOAuth2Client['configuration']['allowed_character_ids'];
         }
 
-        if(!in_array($resourceOwner->getAllianceId(), $allowedAllianceIds) && !in_array($resourceOwner->getCorporationId(), $allowedCorporationIds) && !in_array($resourceOwner->getCharacterID(), $allowedCharacterIds) ){
+	$allEmpty = empty($allowedCharacterIds) && empty($allowedAllianceIds) && empty($allowedCorporationIds);
+
+        if(!$allEmpty && !in_array($resourceOwner->getAllianceId(), $allowedAllianceIds) && !in_array($resourceOwner->getCorporationId(), $allowedCorporationIds) && !in_array($resourceOwner->getCharacterID(), $allowedCharacterIds) ){
             throw new MWException('The character that you authenticated ('.$resourceOwner->getCharacterName().
                 ') is not authorize to view this wiki');
         }
